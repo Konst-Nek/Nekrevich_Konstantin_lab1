@@ -25,7 +25,9 @@ namespace main
         public Player(string name = "X")
         {
             this.player_name = name;
-            this.position = -1;
+            this.walked_distance = 0;
+            this.position = 0;
+            this.status = Status.Not_in_Game;
         }
         public void Move(int steps, int field)
         {
@@ -81,81 +83,107 @@ namespace main
         }
         public int Get_Distance()
         {
-            return Math.Abs(cat.position - mouse.position);
+            return Math.Abs(this.cat.position - this.mouse.position);
         }
         public void Print()
         {
-            if (cat.position == -1)
+            using (StreamWriter sr = new StreamWriter(this.output_path, true))
             {
-                Console.WriteLine($"&&\t{mouse.position}\t?");
-            }
-            else if (mouse.position == -1)
-            {
-                Console.WriteLine($"{cat.position}\t&&\t?");
-            }
-            else
-            {
-                Console.WriteLine($"{cat.position}\t{mouse.position}\t{Get_Distance()}");
+                if (this.cat.status == Status.Not_in_Game)
+                {
+                    sr.WriteLine($"??\t{this.mouse.position + 1}\t??");
+                }
+                else if (this.mouse.status == Status.Not_in_Game)
+                {
+                    sr.WriteLine($"{this.cat.position + 1}\t??\t??");
+                }
+                else
+                {
+                    sr.WriteLine($"{this.cat.position + 1}\t{this.mouse.position + 1}\t{Get_Distance()}");
+                }
             }
         }
         public void Run()
         {
-            status = Game_Status.Start;
-            Console.WriteLine("Cat and mouse");
-            Console.WriteLine();
-            Console.WriteLine("Cat\tMouse\tDistance");
-            Console.WriteLine("---------------------------------------");
-            while (status != Game_Status.End)
+            this.status = Game_Status.Start;
+            using (StreamWriter sr = new StreamWriter(this.output_path, false))
             {
-                using (StreamReader sr = new StreamReader(input_path))
+                sr.WriteLine("Cat and mouse");
+                sr.WriteLine();
+                sr.WriteLine("Cat\tMouse\tDistance");
+                sr.WriteLine("---------------------------------------");
+            }
+            while (this.status != Game_Status.End)
+            {
+                using (StreamReader sr = new StreamReader(this.input_path))
                 {
                     String line = sr.ReadLine();
                     this.field_size = Convert.ToInt32(line);
-                    cat.status = Status.Playing;
-                    cat.position += 1;
-                    mouse.status = Status.Playing;
-                    mouse.position += 1;
                     while (sr.EndOfStream != true)
                     {
                         line = sr.ReadLine();
-                        switch (line.Split("\t")[0])
+                        switch (line[0])
                         {
-                            case "C": cat.Move(Convert.ToInt32(line.Split("\t")[1]), this.field_size); break;
-                            case "M": mouse.Move(Convert.ToInt32(line.Split("\t")[1]), this.field_size); break;
-                            case "P": break;
+                            case 'C': 
+                                if  (this.cat.status == Status.Not_in_Game)
+                                {
+                                    this.cat.position = Convert.ToInt32(line.Substring(1)) - 1;
+                                    this.cat.status = Status.Playing;
+                                }
+                                else
+                                {
+                                    this.cat.Move(Convert.ToInt32(line.Substring(1)), this.field_size);
+                                }
+                                break;
+                            case 'M':
+                                if (this.mouse.status == Status.Not_in_Game)
+                                {
+                                    this.mouse.position = Convert.ToInt32(line.Substring(1)) - 1;
+                                    this.mouse.status = Status.Playing;
+                                }
+                                else
+                                {
+                                    this.mouse.Move(Convert.ToInt32(line.Substring(1)), this.field_size);
+                                }
+                                break;
+                            case 'P': Print(); break;
                             default: break;
                         }
-                        if (cat.position == mouse.position)
+                        if (this.cat.position == mouse.position)
                         {
-                            cat.status = Status.Winner;
-                            mouse.status = Status.Loser;
-                            status = Game_Status.End;
+                            this.cat.status = Status.Winner;
+                            this.mouse.status = Status.Loser;
+                            this.status = Game_Status.End;
                             break;
                         }
                     }
                 }
+                this.status = Game_Status.End;
             }
-            Console.WriteLine("---------------------------------------");
-            Console.WriteLine($"Distance traveled by cat: {cat.walked_distance}");
-            Console.WriteLine($"Distance traveled by mouse: {mouse.walked_distance}");
-            if (cat.status == Status.Winner)
+            using (StreamWriter sr = new StreamWriter(this.output_path, true))
             {
-                Console.WriteLine($"Mouse caught at: {cat.position}");
+                sr.WriteLine("---------------------------------------");
+                sr.WriteLine($"Distance traveled by cat: {this.cat.walked_distance}");
+                sr.WriteLine($"Distance traveled by mouse: {this.mouse.walked_distance}");
+                if (this.cat.status == Status.Winner)
+                {
+                    sr.WriteLine($"Mouse caught at: {this.cat.position + 1}");
+                }
+                else
+                {
+                    sr.WriteLine("Mouse evaded cat");
+                }
             }
-            else
-            {
-                Console.WriteLine("Mouse evaded cat");
-            }
-            status = Game_Status.End;
+            this.status = Game_Status.End;
         }
     }
     class Prog
     {
-        static void main(string[] args)
+        public static void Main(string[] args)
         {
-            String input_path = "";
-            String output_path = "";
-            Game game = new Game();
+            String input_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\2.ChaseData.txt";
+            String output_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\PursuitLog.txt";
+            Game game = new Game(input_path, output_path);
             game.Run();
         }
     }
