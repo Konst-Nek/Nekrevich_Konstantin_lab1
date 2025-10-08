@@ -7,8 +7,9 @@ namespace main
 {
     enum Game_Status
     {
-        Start,
-        End
+        Created,
+        Started,
+        Ended
     }
     enum Status
     {
@@ -70,6 +71,7 @@ namespace main
             this.output_path = "";
             this.cat = new Player("Cat");
             this.mouse = new Player("Mouse");
+            this.status = Game_Status.Created;
         }
         public Game(String input_path, String output_path)
         {
@@ -78,6 +80,7 @@ namespace main
             this.output_path = output_path;
             this.cat = new Player("Cat");
             this.mouse = new Player("Mouse");
+            this.status = Game_Status.Created;
         }
         public int Get_Distance() // Расстояние
         {
@@ -111,7 +114,7 @@ namespace main
         }
         public void Run() // Запуск игры
         {
-            this.status = Game_Status.Start;
+            this.status = Game_Status.Started;
             using (StreamWriter sr = new StreamWriter(this.output_path, false))
             {
                 sr.WriteLine("Cat and mouse");
@@ -119,7 +122,7 @@ namespace main
                 sr.WriteLine("Cat\tMouse\tDistance");
                 sr.WriteLine("---------------------------------------");
             }
-            while (this.status != Game_Status.End) // Начало
+            while (this.status != Game_Status.Ended) // Начало
             {
                 using (StreamReader sr = new StreamReader(this.input_path))
                 {
@@ -159,12 +162,12 @@ namespace main
                         {
                             this.cat.status = Status.Winner;
                             this.mouse.status = Status.Loser;
-                            this.status = Game_Status.End;
+                            this.status = Game_Status.Ended;
                             break;
                         }
                     }
                 }
-                this.status = Game_Status.End; // Конец
+                this.status = Game_Status.Ended; // Конец
             }
             using (StreamWriter sr = new StreamWriter(this.output_path, true)) // Запись результатов в файл
             {
@@ -188,7 +191,7 @@ namespace main
     {
         public static void Main(string[] args)
         {
-            String input_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\1.ChaseData.txt"; // Путь к исходным данным
+            String input_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\3.ChaseData.txt"; // Путь к исходным данным
             String output_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\PursuitLog.txt"; // Путь куда записать результаты
             Game game = new Game(input_path, output_path);
             game.Run();
