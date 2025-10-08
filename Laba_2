@@ -1,0 +1,162 @@
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+
+namespace main
+{
+    enum Game_Status
+    {
+        Start,
+        End
+    }
+    enum Status
+    {
+        Not_in_Game,
+        Playing,
+        Loser,
+        Winner
+    }
+    class Player
+    {
+        public string player_name;
+        public int position;
+        public Status status;
+        public int walked_distance;
+        public Player(string name = "X")
+        {
+            this.player_name = name;
+            this.position = -1;
+        }
+        public void Move(int steps, int field)
+        {
+            this.walked_distance += Math.Abs(steps);
+            if (Math.Abs(steps) > field)
+            {
+                if (steps > 0)
+                {
+                    this.position += steps % field;
+                }
+                else
+                {
+                    this.position -= Math.Abs(steps) % field;
+                }
+            }
+            else
+            {
+                this.position += steps;
+            }
+            if (this.position > field)
+            {
+                this.position = this.position - field;
+            }
+            else if (this.position < 0)
+            {
+                this.position = field - Math.Abs(this.position);
+            }
+        }
+    }
+    class Game
+    {
+        public int field_size;
+        public String input_path;
+        public String output_path;
+        public Player cat;
+        public Player mouse;
+        public Game_Status status;
+        public Game()
+        {
+            this.field_size = 0;
+            this.input_path = "";
+            this.output_path = "";
+            this.cat = new Player("Cat");
+            this.mouse = new Player("Mouse");
+        }
+        public Game(String input_path, String output_path)
+        {
+            this.field_size = 0;
+            this.input_path = input_path;
+            this.output_path = output_path;
+            this.cat = new Player("Cat");
+            this.mouse = new Player("Mouse");
+        }
+        public int Get_Distance()
+        {
+            return Math.Abs(cat.position - mouse.position);
+        }
+        public void Print()
+        {
+            if (cat.position == -1)
+            {
+                Console.WriteLine($"&&\t{mouse.position}\t?");
+            }
+            else if (mouse.position == -1)
+            {
+                Console.WriteLine($"{cat.position}\t&&\t?");
+            }
+            else
+            {
+                Console.WriteLine($"{cat.position}\t{mouse.position}\t{Get_Distance()}");
+            }
+        }
+        public void Run()
+        {
+            status = Game_Status.Start;
+            Console.WriteLine("Cat and mouse");
+            Console.WriteLine();
+            Console.WriteLine("Cat\tMouse\tDistance");
+            Console.WriteLine("---------------------------------------");
+            while (status != Game_Status.End)
+            {
+                using (StreamReader sr = new StreamReader(input_path))
+                {
+                    String line = sr.ReadLine();
+                    this.field_size = Convert.ToInt32(line);
+                    cat.status = Status.Playing;
+                    cat.position += 1;
+                    mouse.status = Status.Playing;
+                    mouse.position += 1;
+                    while (sr.EndOfStream != true)
+                    {
+                        line = sr.ReadLine();
+                        switch (line.Split("\t")[0])
+                        {
+                            case "C": cat.Move(Convert.ToInt32(line.Split("\t")[1]), this.field_size); break;
+                            case "M": mouse.Move(Convert.ToInt32(line.Split("\t")[1]), this.field_size); break;
+                            case "P": break;
+                            default: break;
+                        }
+                        if (cat.position == mouse.position)
+                        {
+                            cat.status = Status.Winner;
+                            mouse.status = Status.Loser;
+                            status = Game_Status.End;
+                            break;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("---------------------------------------");
+            Console.WriteLine($"Distance traveled by cat: {cat.walked_distance}");
+            Console.WriteLine($"Distance traveled by mouse: {mouse.walked_distance}");
+            if (cat.status == Status.Winner)
+            {
+                Console.WriteLine($"Mouse caught at: {cat.position}");
+            }
+            else
+            {
+                Console.WriteLine("Mouse evaded cat");
+            }
+            status = Game_Status.End;
+        }
+    }
+    class Prog
+    {
+        static void main(string[] args)
+        {
+            String input_path = "";
+            String output_path = "";
+            Game game = new Game();
+            game.Run();
+        }
+    }
+}
