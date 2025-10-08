@@ -29,7 +29,7 @@ namespace main
             this.position = 0;
             this.status = Status.Not_in_Game;
         }
-        public void Move(int steps, int field)
+        public void Move(int steps, int field) // Перерасчёт позиции
         {
             this.walked_distance += Math.Abs(steps);
             if (Math.Abs(steps) > field)
@@ -81,11 +81,11 @@ namespace main
             this.cat = new Player("Cat");
             this.mouse = new Player("Mouse");
         }
-        public int Get_Distance()
+        public int Get_Distance() // Пройденный путь
         {
             return Math.Abs(this.cat.position - this.mouse.position);
         }
-        public void Print()
+        public void Print() // Запись в файл
         {
             using (StreamWriter sr = new StreamWriter(this.output_path, true))
             {
@@ -103,7 +103,7 @@ namespace main
                 }
             }
         }
-        public void Run()
+        public void Run() // Запуск игры
         {
             this.status = Game_Status.Start;
             using (StreamWriter sr = new StreamWriter(this.output_path, false))
@@ -113,7 +113,7 @@ namespace main
                 sr.WriteLine("Cat\tMouse\tDistance");
                 sr.WriteLine("---------------------------------------");
             }
-            while (this.status != Game_Status.End)
+            while (this.status != Game_Status.End) // Начало
             {
                 using (StreamReader sr = new StreamReader(this.input_path))
                 {
@@ -125,7 +125,7 @@ namespace main
                         switch (line[0])
                         {
                             case 'C': 
-                                if  (this.cat.status == Status.Not_in_Game)
+                                if  (this.cat.status == Status.Not_in_Game) // Если кот ещё не в игре
                                 {
                                     this.cat.position = Convert.ToInt32(line.Substring(1)) - 1;
                                     this.cat.status = Status.Playing;
@@ -136,7 +136,7 @@ namespace main
                                 }
                                 break;
                             case 'M':
-                                if (this.mouse.status == Status.Not_in_Game)
+                                if (this.mouse.status == Status.Not_in_Game) // Если мышь ещё не в игре
                                 {
                                     this.mouse.position = Convert.ToInt32(line.Substring(1)) - 1;
                                     this.mouse.status = Status.Playing;
@@ -158,9 +158,9 @@ namespace main
                         }
                     }
                 }
-                this.status = Game_Status.End;
+                this.status = Game_Status.End; // Конец
             }
-            using (StreamWriter sr = new StreamWriter(this.output_path, true))
+            using (StreamWriter sr = new StreamWriter(this.output_path, true)) // Запись результатов в файл
             {
                 sr.WriteLine("---------------------------------------");
                 sr.WriteLine($"Distance traveled by cat: {this.cat.walked_distance}");
@@ -171,18 +171,19 @@ namespace main
                 }
                 else
                 {
+                    this.cat.status = Status.Loser;
+                    this.mouse.status = Status.Winner;
                     sr.WriteLine("Mouse evaded cat");
                 }
             }
-            this.status = Game_Status.End;
         }
     }
     class Prog
     {
         public static void Main(string[] args)
         {
-            String input_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\2.ChaseData.txt";
-            String output_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\PursuitLog.txt";
+            String input_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\2.ChaseData.txt"; // Путь к исходным данным
+            String output_path = "C:\\Users\\noob1\\source\\repos\\lab2\\lab2\\PursuitLog.txt"; // Путь куда записать результаты
             Game game = new Game(input_path, output_path);
             game.Run();
         }
